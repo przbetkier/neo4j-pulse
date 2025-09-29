@@ -1,0 +1,24 @@
+[versions]
+jackson = "2.20.0"
+kotlin = "2.2.20"
+ktor = "3.3.0"
+neo4j-driver = "5.28.9"
+sl4j = "2.0.17"
+snakeyaml = "2.5"
+
+[plugins]
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+
+[libraries]
+neo4j-driver = { group = "org.neo4j.driver", name = "neo4j-java-driver", version.ref = "neo4j-driver" }
+jackson-core = { group = "com.fasterxml.jackson.core", name = "jackson-core", version.ref = "jackson" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "jackson" }
+jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name = "jackson-module-kotlin", version.ref = "jackson" }
+ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
+ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
+snakeyaml = { group = "org.yaml", name = "snakeyaml", version.ref = "snakeyaml" }
+sl4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "sl4j" }
+
+[bundles]
+jackson = ["jackson-core", "jackson-databind", "jackson-module-kotlin"]
+ktor = ["ktor-server-core", "ktor-server-netty"]

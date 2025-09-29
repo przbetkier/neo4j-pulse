@@ -1,0 +1,111 @@
+package dev.przbetkier
+
+import io.ktor.http.ContentType.*
+import io.ktor.http.HttpStatusCode.Companion.InternalServerError
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import org.slf4j.LoggerFactory
+import org.yaml.snakeyaml.Yaml
+import java.io.File
+
+
+data class Neo4jConfig(
+    val uri: String,
+    val username: String,
+    val password: String,
+    val database: String = "neo4j"
+)
+
+fun loadConfig(): Neo4jConfig {
+    val configFile = File("config.yml")
+    if (!configFile.exists()) {
+        // Create default config file
+        val defaultConfig = """
+            neo4j:
+              uri: bolt://localhost:7687
+              username: neo4j
+              password: password
+              database: neo4j
+        """.trimIndent()
+
+        configFile.writeText(defaultConfig)
+        println("Created default config.yml file. Please update it with your Neo4j connection details.")
+    }
+
+    val yaml = Yaml()
+    val config = yaml.load<Map<String, Map<String, String>>>(configFile.readText())
+    val neo4jConfig = config["neo4j"]
+
+    return Neo4jConfig(
+        uri = neo4jConfig?.get("uri") ?: "bolt://localhost:7687",
+        username = neo4jConfig?.get("username") ?: "neo4j",
+        password = neo4jConfig?.get("password") ?: "password",
+        database = neo4jConfig?.get("database") ?: "neo4j"
+    )
+}
+
+open class Neo4jPulseRunner {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(Neo4jPulseRunner::class.java)
+        @JvmStatic
+        fun main(args: Array<String>) {
+            logger.info("\u001B[34m Neo4j Pulse - Metric Exporter for Neo4j \u001B[0m")
+
+            val config = loadConfig()
+            val collector = Neo4jMetricsCollector(config)
+
+            val server = embeddedServer(Netty, port = 4242) {
+                routing {
+                    get("/metrics") {
+                        try {
+                            val metrics = collector.collectMetrics()
+                            call.respondText(metrics, Text.Plain)
+                        } catch (e: Exception) {
+                            call.respondText(
+                                "Error collecting metrics: ${e.message}",
+                                Text.Plain,
+                                InternalServerError
+                            )
+                        }
+                    }
+
+                    get("/") {
+                        call.respondText(
+                            """
+                    Neo4j Community Edition Metrics Exporter
+                    
+                    Available endpoints:
+                    - GET /metrics - Prometheus format metrics
+                    - GET /health - Health check
+                    
+                    Configuration: config.yml
+                    Port: 4242
+                """.trimIndent()
+                        )
+                    }
+
+                    get("/health") {
+                        call.respondText("OK")
+                    }
+                }
+            }
+
+            Runtime.getRuntime().addShutdownHook(Thread {
+                logger.info("Shutting down...")
+                collector.close()
+                server.stop(1000, 2000)
+            })
+
+            logger.info("Server starting on port 4242")
+            logger.info("Metrics endpoint: http://localhost:4242/metrics")
+            logger.info("Health check: http://localhost:4242/health")
+
+            server.start(wait = true)
+
+        }
+    }
+
+}
