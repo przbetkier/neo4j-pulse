@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.bundles.jackson)
     implementation(libs.bundles.ktor)
     implementation(libs.snakeyaml)
-    implementation(libs.sl4j.simple)
+    implementation(libs.slf4j.simple)
 
     testImplementation(kotlin("test"))
 }
@@ -30,4 +30,10 @@ tasks.test {
 
 kotlin {
     jvmToolchain(23)
+}
+
+tasks.withType<Jar> {
+    manifest {
+        attributes["Main-Class"] = "dev.przbetkier.Neo4jPulseRunner"
+    }
 }

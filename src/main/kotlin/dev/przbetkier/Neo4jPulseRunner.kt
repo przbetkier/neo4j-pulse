@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
 import java.io.File
 
+private val logger = LoggerFactory.getLogger(Neo4jConfig::class.java)
 
 data class Neo4jConfig(
     val uri: String,
@@ -19,6 +20,22 @@ data class Neo4jConfig(
 )
 
 fun loadConfig(): Neo4jConfig {
+    // First try to load from environment variables
+    val envUri = System.getenv("NEO4J_URI")
+    val envUsername = System.getenv("NEO4J_USERNAME")
+    val envPassword = System.getenv("NEO4J_PASSWORD")
+    val envDatabase = System.getenv("NEO4J_DATABASE")
+
+    if (!envUri.isNullOrBlank() && !envUsername.isNullOrBlank() && !envPassword.isNullOrBlank()) {
+        logger.info("Using configuration from environment variables")
+        return Neo4jConfig(
+            uri = envUri,
+            username = envUsername,
+            password = envPassword,
+            database = envDatabase ?: "neo4j"
+        )
+    }
+
     val configFile = File("config.yml")
     if (!configFile.exists()) {
         // Create default config file
@@ -50,6 +67,7 @@ open class Neo4jPulseRunner {
 
     companion object {
         private val logger = LoggerFactory.getLogger(Neo4jPulseRunner::class.java)
+
         @JvmStatic
         fun main(args: Array<String>) {
             logger.info("\u001B[34m Neo4j Pulse - Metric Exporter for Neo4j \u001B[0m")
@@ -107,5 +125,4 @@ open class Neo4jPulseRunner {
 
         }
     }
-
 }
