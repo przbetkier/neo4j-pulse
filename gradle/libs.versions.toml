@@ -3,7 +3,7 @@ jackson = "2.20.0"
 kotlin = "2.2.20"
 ktor = "3.3.0"
 neo4j-driver = "5.28.9"
-sl4j = "2.0.17"
+slf4j = "2.0.17"
 snakeyaml = "2.5"
 
 [plugins]
@@ -17,7 +17,7 @@ jackson-module-kotlin = { group = "com.fasterxml.jackson.module", name = "jackso
 ktor-server-core = { group = "io.ktor", name = "ktor-server-core", version.ref = "ktor" }
 ktor-server-netty = { group = "io.ktor", name = "ktor-server-netty", version.ref = "ktor" }
 snakeyaml = { group = "org.yaml", name = "snakeyaml", version.ref = "snakeyaml" }
-sl4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "sl4j" }
+slf4j-simple = { group = "org.slf4j", name = "slf4j-simple", version.ref = "slf4j" }
 
 [bundles]
 jackson = ["jackson-core", "jackson-databind", "jackson-module-kotlin"]
