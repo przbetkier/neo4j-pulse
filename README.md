@@ -40,7 +40,7 @@ The exporter connects to your Neo4j database and executes several Cypher queries
 4. **`CALL dbms.listQueries()`** - Counts active queries
 5. **`CALL apoc.meta.stats()`** - Retrieves database cardinality statistics
 
-These metrics are parsed, transformed into Prometheus format, and exposed on port 4242 at the `/metrics` endpoint for Prometheus to scrape.
+These metrics are parsed, transformed into Prometheus format, and exposed on port 4242 at the `/` endpoint for Prometheus to scrape.
 
 
 ## Quick Start
@@ -85,9 +85,9 @@ neo4j:
 
 ## Endpoints
 
-- `http://localhost:4242/metrics` - Prometheus metrics endpoint
+- `http://localhost:4242/` - Prometheus metrics endpoint
 - `http://localhost:4242/health` - Health check endpoint
-- `http://localhost:4242/` - Service information
+- `http://localhost:4242/info` - Service information
 
 ## Example Metrics
 
