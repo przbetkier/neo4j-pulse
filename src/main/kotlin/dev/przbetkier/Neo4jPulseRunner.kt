@@ -1,11 +1,12 @@
 package dev.przbetkier
 
-import io.ktor.http.ContentType.*
+import io.ktor.http.ContentType.Text
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import org.slf4j.LoggerFactory
 import org.yaml.snakeyaml.Yaml
 import java.io.File
@@ -48,7 +49,7 @@ fun loadConfig(): Neo4jConfig {
         """.trimIndent()
 
         configFile.writeText(defaultConfig)
-        println("Created default config.yml file. Please update it with your Neo4j connection details.")
+        logger.warn("Created default config.yml file. Please update it with your Neo4j connection details.")
     }
 
     val yaml = Yaml()
@@ -77,7 +78,7 @@ open class Neo4jPulseRunner {
 
             val server = embeddedServer(Netty, port = 4242) {
                 routing {
-                    get("/metrics") {
+                    get("/") {
                         try {
                             val metrics = collector.collectMetrics()
                             call.respondText(metrics, Text.Plain)
@@ -90,13 +91,13 @@ open class Neo4jPulseRunner {
                         }
                     }
 
-                    get("/") {
+                    get("/info") {
                         call.respondText(
                             """
                     Neo4j Community Edition Metrics Exporter
                     
                     Available endpoints:
-                    - GET /metrics - Prometheus format metrics
+                    - GET / - Prometheus format metrics
                     - GET /health - Health check
                     
                     Configuration: config.yml
@@ -118,11 +119,11 @@ open class Neo4jPulseRunner {
             })
 
             logger.info("Server starting on port 4242")
-            logger.info("Metrics endpoint: http://localhost:4242/metrics")
+            logger.info("Metrics endpoint: http://localhost:4242/")
+            logger.info("Metrics endpoint: http://localhost:4242/info")
             logger.info("Health check: http://localhost:4242/health")
 
             server.start(wait = true)
-
         }
     }
 }
